@@ -1,0 +1,40 @@
+{% extends "navbar.html" %}
+{% block title %}Main Menu{% endblock %}
+{% block content %}
+<div class="container">
+    <br>
+    <div class="row">
+        <div class="col-sm text-center">
+            <a href="{{ url_for('missinglist') }}">
+                <img src="https://image.flaticon.com/icons/png/512/295/295653.png"
+                 class="rounded img-fluid" height="300" width="300" alt="List of Missing Persons">
+            </a>
+            <br><br>List of Missing Persons
+        </div>
+        <div class="col-sm text-center">
+            <a href="{{ url_for('map') }}">
+                <img src="https://image.flaticon.com/icons/png/512/854/854878.png"
+                 class="rounded img-fluid" height="300" width="300" alt="Map Overview">
+            </a>
+            <br><br>Map Overview
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-sm text-center">
+            <a href="{{ url_for('rqstform') }}">
+                <img src="https://image.flaticon.com/icons/png/512/1486/1486433.png"
+                 class="rounded img-fluid" height="300" width="300" alt="Request Form">
+            </a>
+            <br><br>Request Form
+        </div>
+        <div class="col-sm text-center">
+            <a href="{{ url_for('aboutus') }}">
+                <img src="https://image.flaticon.com/icons/png/512/744/744405.png"
+                 class="rounded img-fluid" height="300" width="300" alt="About Us">
+            </a>
+            <br><br>About Us
+        </div>
+    </div>
+</div>
+{% endblock %}

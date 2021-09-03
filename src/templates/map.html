@@ -1,21 +1,36 @@
 {% extends "navbar.html" %}
-{% block title %}Request Form{% endblock %}
+{% block title %}Map Overview{% endblock %}
 {% block content %}
 <html lang="en">
 <head>
-<!--    mapbox-->
+    <!--    mapbox-->
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
     <!-- Load the `mapbox-gl-geocoder` plugin. -->
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
-<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" type="text/css">
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet"
+          href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css"
+          type="text/css">
 </head>
 <body>
 
 <main class="container text-center">
     <br>
-    <label for="map">Missing Person Location</label>
-    <div id="map" style="width: 100%; height: 850px"></div>
+    <h2>Missing Person Location</h2>
+    <small id="missingLocation" class="form-text text-muted">
+        Displays the location of reported missing person.
+    </small>
+    <br>
+    <div id="map" style="width: 100%; height: 800px"></div>
+
+    <style>
+    #map {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-radius: .25rem;
+    }
+
+    </style>
 
 </main>
 
@@ -49,6 +64,8 @@ map.addControl(
         showUserHeading: true
     })
 );
+
+
 </script>
 </body>
 {% endblock %}

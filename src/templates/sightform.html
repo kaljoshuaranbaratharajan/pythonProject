@@ -1,5 +1,5 @@
 {% extends "navbar.html" %}
-{% block title %}Request Form{% endblock %}
+{% block title %}Sighting    Form{% endblock %}
 {% block content %}
 <html lang="en">
 <head>
@@ -20,29 +20,23 @@
     <br>
     <form>
         <div class="form-row justify-content-center">
-            <div class="form-group col-md-5">
-                <label for="missingName"><h6>Full Name</h6></label>
-                <input type="text" class="form-control" id="missingName" placeholder="Full Name" required>
-                <small id="missingNameHelp" class="form-text text-muted">
-                    The name must be exactly the same as the Identification Card.
-                </small>
-            </div>
-            <div class="form-group col-md-1">
-                <label for="missingAge"><h6>Age</h6></label>
-                <input type="number" value="16" min="0" max="100" step="1" class="form-control" id="missingAge"
-                       placeholder="Age">
-            </div>
-            <div class="form-group col-md-2">
-                <label for="missingDate"><h6>Missing Date</h6></label>
-                <input id="missingDate" type="date" class="form-control" placeholder="Select date">
-            </div>
-            <div class="form-group col-md-2">
-                <label class="mr-sm-2" for="genderSelect"><h6>Gender</h6></label>
-                <select class="custom-select mr-sm-2" id="genderSelect">
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Rather not say</option>
+            <div class="form-group col-md-6">
+                <label class="mr-sm-2" for="missingListNames"><h6>Missing Persons</h6></label>
+                <select class="custom-select mr-sm-2" id="missingListNames">
+                    <option value="1">Elon Musk</option>
+                    <option value="2">Claire Elise Boucher</option>
+                    <option value="3">X Æ A-Xii</option>
                 </select>
+            </div>
+            <div class="form-group col-md-2">
+                <label for="sightingDate"><h6>Missing Date</h6></label>
+                <input id="sightingDate" type="date" class="form-control" placeholder="Select date">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="default-picker"><h6>Time of Event</h6></label>
+                <div class="md-form md-outline">
+                    <input type="time" id="default-picker" class="form-control" placeholder="Select time">
+                </div>
             </div>
         </div>
         <div class="form-row justify-content-center">
@@ -55,7 +49,8 @@
         <div class="form-row justify-content-center">
             <div class="form-group col-md-10">
                 <label for="browse"><h6>Images</h6></label>
-                <input id="browse" type="file" accept=".jpg,.png" class="form-control-file" onchange="previewFiles()"
+                <input id="browse" type="file" accept=".jpg,.png,.mp4,.wav,.mov" class="form-control-file"
+                       onchange="previewFiles()"
                        multiple>
                 <br>
                 <div id="preview"></div>
@@ -96,6 +91,8 @@
     }
 
 
+
+
     </style>
 
 </main>
@@ -110,7 +107,6 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
 
 <script type="text/javascript">
-
 <!--image attachment-->
 function previewFiles() {
 
@@ -119,7 +115,7 @@ function previewFiles() {
 
   function readAndPreview(file) {
 
-    if ( /\.(jpe?g|png)$/i.test(file.name) ) {
+    if ( /\.(jpe?g|png|mp4|wav|mov)$/i.test(file.name) ) {
       var reader = new FileReader();
 
       reader.addEventListener("load", function () {
@@ -169,13 +165,6 @@ const geocoder = new MapboxGeocoder({
 
 document.getElementById('geocoder').appendChild(geocoder.onAdd(rqstmap));
 
-<!--age select form-->
-$(function(){
-    var $select = $(".1-100");
-    for (i=1;i<=100;i++){
-        $select.append($('<option></option>').val(i).html(i))
-    }
-});
 
 
 </script>

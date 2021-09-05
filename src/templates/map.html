@@ -5,9 +5,7 @@
 <head>
     <!--    mapbox-->
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
     <!-- Load the `mapbox-gl-geocoder` plugin. -->
-    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
     <link rel="stylesheet"
           href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css"
           type="text/css">
@@ -29,11 +27,13 @@
         margin-bottom: 10px;
         border-radius: .25rem;
     }
-
     </style>
 
 </main>
-
+<!--mapbox-->
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
+<!--geocoder-->
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
 <script type="text/javascript">
 <!--        mapbox-->
 mapboxgl.accessToken = 'pk.eyJ1IjoibWlzc2luZ3BlcnNvbnRlc3RpbmciLCJhIjoiY2t0MnBqajR5MDBiZTJxbnd3Zm91b3kwOCJ9.3fL2XKMWcaJ_-k3hE-oU7w';
@@ -64,7 +64,6 @@ map.addControl(
         showUserHeading: true
     })
 );
-
 
 </script>
 </body>

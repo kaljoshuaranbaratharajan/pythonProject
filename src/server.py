@@ -1,7 +1,12 @@
-from flask import Flask, redirect, url_for, render_template, request, session
+from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_mysqldb import MySQL
+from werkzeug.utils import secure_filename
 import MySQLdb.cursors
 import re
+import os
+# import magic
+import urllib.request
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -13,6 +18,21 @@ app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'flask'
 
 mysql = MySQL(app)
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+directory = os.path.join(basedir, 'static\\uploads')
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
+UPLOAD_FOLDER = 'static\\uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/admin')
 def admin():
@@ -38,6 +58,7 @@ def login():
             msg = 'Incorrect name / password !'
     return render_template('login.html', msg=msg)
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     msg = ''
@@ -46,7 +67,7 @@ def register():
         password = request.form['password']
         email = request.form['email']
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM users WHERE name = % s', (name,))
+        cursor.execute('SELECT * FROM users WHERE name = % s', (name))
         account = cursor.fetchone()
         if account:
             msg = 'Account already exists !'
@@ -64,12 +85,14 @@ def register():
         msg = 'Please fill out the form !'
     return render_template('register.html', msg=msg)
 
+
 @app.route('/logout')
 def logout():
     session.pop('loggedin', None)
     session.pop('id', None)
     session.pop('name', None)
     return redirect(url_for('login'))
+
 
 @app.route('/missinglist')
 def missinglist():
@@ -96,9 +119,42 @@ def sightform():
     return render_template("sightform.html")
 
 
+@app.route('/upload', methods=['POST', 'GET'])
+def upload():
+    if request.method == 'POST':
+        mName = request.form['mName']
+        mDate = request.form['mDate']
+        mAge = request.form['mAge']
+        mGender = request.form['mGender']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        now = datetime.now()
+
+        files = request.files.getlist('files[]')
+        # print(files)
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+                cursor.execute(
+                    "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mImages, uploadedDate) VALUES (% s, % s, % s, % s, %s, %s)",
+                    (mName, mDate, mAge, mGender, filename, now))
+            print(file)
+        cursor.close()
+        flash('File(s) successfully uploaded')
+
+        mysql.connection.commit()
+
+    return render_template("rqstform.html")
+
+
 @app.route('/aboutus')
 def aboutus():
     return render_template("aboutus.html")
+
+
+@app.route('/profile')
+def profile():
+    return render_template("profile.html")
 
 
 if __name__ == "__main__":

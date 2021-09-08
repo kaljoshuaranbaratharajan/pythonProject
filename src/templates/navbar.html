@@ -34,11 +34,18 @@
             </li>
         </ul>
     </div>
-    <button type="button" class="btn btn-default">
-        <a href="{{ url_for('logout') }}">
+    <div class="btn-group">
+        <button type="button" class="btn btn-default data-toggle " data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
             <h2><i class="fas fa-user-alt"></i></h2>
-        </a>
-    </button>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a>
+            <a class="dropdown-item" href="#">Settings</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
 </nav>
 
 <div class="modal fade" id="navModal" aria-labelledby="modalTitle"
@@ -95,7 +102,6 @@
       activeNavItem.removeClass('active');
       $(this).addClass('active');
     });
-
 
 </script>
 </body>

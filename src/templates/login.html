@@ -9,7 +9,7 @@
           integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
           crossorigin="anonymous"/>
     <meta charset="UTF-8">
-    <title>{% block title %} {% endblock %}</title>
+    <title>{% block title %}Login{% endblock %}</title>
 </head>
 
 <body>
@@ -22,7 +22,6 @@
                         <h3 class="mb-5">Login</h3>
                         <h2 class="word">
                             <form action="{{ url_for('login') }}" method="post">
-                                <div class="msg">{{ msg }}</div>
                                 <div class="form-outline mb-4">
                                     <input id="email" type="email" name="email" placeholder="Email Address"
                                            class="form-control form-control-lg" required="" autofocus=""
@@ -39,6 +38,7 @@
                                 </div>
                             </form>
                         </h2>
+                        <div class="msg">{{ msg }}</div>
                         <p class="text-center text-muted mt-5 mb-0">Don't have an account?
                             <a href="{{ url_for('register') }}" class="fw-bold text-body">
                                 <u>Register here</u>

@@ -4,8 +4,6 @@ from werkzeug.utils import secure_filename
 import MySQLdb.cursors
 import re
 import os
-# import magic
-import urllib.request
 from datetime import datetime
 
 app = Flask(__name__)
@@ -19,6 +17,7 @@ app.config['MYSQL_DB'] = 'flask'
 
 mysql = MySQL(app)
 
+# local filepath
 basedir = os.path.abspath(os.path.dirname(__file__))
 directory = os.path.join(basedir, 'static\\uploads')
 if not os.path.exists(directory):
@@ -67,7 +66,7 @@ def register():
         password = request.form['password']
         email = request.form['email']
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM users WHERE name = % s', (name))
+        cursor.execute('SELECT * FROM users WHERE name = % s', [name])
         account = cursor.fetchone()
         if account:
             msg = 'Account already exists !'
@@ -126,6 +125,9 @@ def upload():
         mDate = request.form['mDate']
         mAge = request.form['mAge']
         mGender = request.form['mGender']
+        mLong = request.form['lat']
+        mLat = request.form['long']
+
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         now = datetime.now()
 
@@ -136,8 +138,8 @@ def upload():
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
                 cursor.execute(
-                    "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mImages, uploadedDate) VALUES (% s, % s, % s, % s, %s, %s)",
-                    (mName, mDate, mAge, mGender, filename, now))
+                    "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, mImages, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (mName, mDate, mAge, mGender, mLong, mLat, filename, now))
             print(file)
         cursor.close()
         flash('File(s) successfully uploaded')

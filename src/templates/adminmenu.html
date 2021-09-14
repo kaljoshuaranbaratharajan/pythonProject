@@ -1,0 +1,20 @@
+{% extends "adminnavbar.html" %}
+{% block title %}Admin Menu{% endblock %}
+{% block content %}
+<div class="container">
+    <br>
+    {% for x in col %}
+    <a href="#" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h6>{{x.mName}}</h6>
+            <h6>{{x.mDate}}</h6>
+            <h6>{{x.mAge}}</h6>
+            <h6>{{x.mGender}}</h6>
+            <button type="button" value="submit" class="btn btn-success">Approve</button>
+            <button type="submit" value="submit" class="btn btn-danger">Delete</button>
+        </div>
+        <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" width="200" height="200">
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

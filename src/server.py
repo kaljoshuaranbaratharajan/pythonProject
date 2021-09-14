@@ -33,12 +33,39 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/admin')
+@app.route('/admin', methods=['POST', 'GET'])
 def admin():
-    return redirect(url_for("mainmenu"))
+    msg = ''
+    if request.method == 'POST' and 'adminEmail' in request.form and 'adminPassword' in request.form:
+        adminEmail = request.form['adminEmail']
+        adminPassword = request.form['adminPassword']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM admins WHERE adminEmail = % s AND adminPassword = % s',
+                       (adminEmail, adminPassword))
+        account = cursor.fetchone()
+        if account:
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['adminName'] = account['adminName']
+            msg = 'Logged in successfully !'
 
+            query = 'SELECT * FROM rqstforms'
+            cursor.execute(query)
+            col = cursor.fetchall()
+            return render_template('adminmenu.html', msg=msg, col=col)
+        else:
+            msg = 'Incorrect name / password !'
+    return render_template('admin.html', msg=msg)
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/adminmenu')
+def adminmenu():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = 'SELECT * FROM rqstforms'
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("adminmenu.html", col=col)
+
+@app.route('/', methods=['POST', 'GET'])
 def login():
     msg = ''
     if request.method == 'POST' and 'email' in request.form and 'password' in request.form:

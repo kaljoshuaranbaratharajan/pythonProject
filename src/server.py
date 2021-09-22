@@ -32,6 +32,7 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# admin side
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
@@ -49,7 +50,7 @@ def admin():
             session['adminName'] = account['adminName']
             msg = 'Logged in successfully !'
 
-            query = 'SELECT * FROM rqstforms'
+            query = "SELECT * FROM rqstforms WHERE status ='1'"
             cursor.execute(query)
             col = cursor.fetchall()
             return render_template('adminmenu.html', msg=msg, col=col)
@@ -57,13 +58,55 @@ def admin():
             msg = 'Incorrect name / password !'
     return render_template('admin.html', msg=msg)
 
-@app.route('/adminmenu')
+
+@app.route('/adminmenu', methods=['POST', 'GET'])
 def adminmenu():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = 'SELECT * FROM rqstforms'
+    query = "SELECT * FROM rqstforms WHERE status ='1'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("adminmenu.html", col=col)
+
+
+@app.route('/approvedlist', methods=['POST', 'GET'])
+def approvedlist():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("approvedlist.html", col=col)
+
+
+@app.route('/adminmap')
+def adminmap():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("adminmap.html", col=col)
+
+
+# status: 0 = Rejected, 1 = Pending Approval, 2 = Approved, 3 = Found, 4 = Missing
+
+@app.route('/approve', methods=['POST', 'GET'])
+def approve():
+    if request.method == 'POST':
+        newID = request.form['test']
+        if request.form.get('approve') == 'approve':
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            query = "UPDATE rqstforms SET status = '2' WHERE id = %s"
+            cursor.execute(query, [newID])
+            mysql.connection.commit()
+
+        elif request.form.get('delete') == 'delete':
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            query = "UPDATE rqstforms SET status = '0' WHERE id = %s"
+            cursor.execute(query, [newID])
+            mysql.connection.commit()
+
+    return redirect(url_for('adminmenu'))
+
+# client side
 
 @app.route('/', methods=['POST', 'GET'])
 def login():
@@ -78,6 +121,7 @@ def login():
             session['loggedin'] = True
             session['id'] = account['id']
             session['name'] = account['name']
+            session['email'] = account['email']
             msg = 'Logged in successfully !'
             return render_template('mainmenu.html', msg=msg)
         else:
@@ -120,9 +164,13 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/missinglist')
+@app.route('/missinglist', methods=['GET', 'POST'])
 def missinglist():
-    return render_template("missinglist.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("missinglist.html", col=col)
 
 
 @app.route('/mainmenu')
@@ -132,7 +180,11 @@ def mainmenu():
 
 @app.route('/map')
 def map():
-    return render_template("map.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("map.html", col=col)
 
 
 @app.route('/rqstform')
@@ -142,7 +194,11 @@ def rqstform():
 
 @app.route('/sightform')
 def sightform():
-    return render_template("sightform.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    cursor.execute(query)
+    col = cursor.fetchall()
+    return render_template("sightform.html", col=col)
 
 
 @app.route('/upload', methods=['POST', 'GET'])
@@ -156,7 +212,7 @@ def upload():
         mLat = request.form['long']
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        now = datetime.now()
+        now = datetime.now().date()
 
         files = request.files.getlist('files[]')
         # print(files)

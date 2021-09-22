@@ -17,8 +17,13 @@
 </head>
 <body>
 
-<main class="container ">
+<main class="container">
     <br>
+    <h2 style="text-transform: uppercase;" class="text-center">Request Form</h2>
+    <small id="missingLocation" class="form-text text-muted text-center">
+        Submit a request in locating missing persons
+    </small>
+    <br><br>
     <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" name="rqst" id="rqst">
         <div class="form-row justify-content-center">
             <div class="form-group col-md-5">

@@ -1,5 +1,5 @@
-{% extends "navbar.html" %}
-{% block title %}Map Overview{% endblock %}
+{% extends "adminnavbar.html" %}
+{% block title %}Admin Map{% endblock %}
 {% block content %}
 <html lang="en">
 <head>
@@ -13,12 +13,6 @@
 <body>
 
 <main class="container text-center">
-    <br>
-    <h2 style="text-transform: uppercase;">Missing Person Location</h2>
-    <small id="missingLocation" class="form-text text-muted">
-        Displays the location of reported missing person
-    </small>
-    <br><br>
     <div id="map" style="width: 100%; height: 800px"></div>
 
     <style>

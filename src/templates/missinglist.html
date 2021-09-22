@@ -1,33 +1,28 @@
 {% extends "navbar.html" %}
 {% block title %}Missing List{% endblock %}
 {% block content %}
-<div class="container">
+<main class="container text-center">
     <br>
-    <div class="list-group">
-        <a href="#" class="list-group-item list-group-item-action">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">List group item heading</h5>
-                <small>3 days ago</small>
+    <h2 style="text-transform: uppercase;">Missing List</h2>
+    <small id="missingLocation" class="form-text text-muted">
+        Displays a list of all approved missing people
+    </small>
+    <br><br>
+    {% for x in col %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto border rounded">
+            <div class="media align-items-lg-center flex-column flex-lg-row p-3">
+                <div>
+                    <h5 style="text-transform: uppercase;">
+                        {{x.mName}}</h5>
+                    <small>The victim {{x.mName}}, aged {{x.mAge}} was
+                        last seen missing at {{x.mLong}} and {{x.mLat}} on {{x.mDate}}.</small>
+                </div>
+                <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" width="200" height="200"
+                     class="ml-lg-5 order-1 order-lg-2">
             </div>
-            <p class="mb-1">Some placeholder content in a paragraph.</p>
-            <small>And some small print.</small>
-        </a>
-        <a href="#" class="list-group-item list-group-item-action">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">List group item heading</h5>
-                <small class="text-muted">3 days ago</small>
-            </div>
-            <p class="mb-1">Some placeholder content in a paragraph.</p>
-            <small class="text-muted">And some muted small print.</small>
-        </a>
-        <a href="#" class="list-group-item list-group-item-action">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">List group item heading</h5>
-                <small class="text-muted">3 days ago</small>
-            </div>
-            <p class="mb-1">Some placeholder content in a paragraph.</p>
-            <small class="text-muted">And some muted small print.</small>
-        </a>
+        </div>
     </div>
-</div>
+    {% endfor %}
+</main>
 {% endblock %}

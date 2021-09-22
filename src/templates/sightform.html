@@ -18,14 +18,19 @@
 
 <main class="container ">
     <br>
+    <h2 style="text-transform: uppercase;" class="text-center">Sighting Form</h2>
+    <small id="missingLocation" class="form-text text-muted text-center">
+        Submit updates on potential sightings of missing persons
+    </small>
+    <br><br>
     <form>
         <div class="form-row justify-content-center">
             <div class="form-group col-md-6">
-                <label class="mr-sm-2" for="missingListNames"><h6>Missing Persons</h6></label>
+                <label class="mr-sm-2" for="missingListNames"><h6>Missing Person's Name</h6></label>
                 <select class="custom-select mr-sm-2" id="missingListNames">
-                    <option value="1">Elon Musk</option>
-                    <option value="2">Claire Elise Boucher</option>
-                    <option value="3">X Æ A-Xii</option>
+                    {% for x in col %}
+                        <option value="{{x.id}}">{{x.mName}}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group col-md-2">
@@ -44,16 +49,6 @@
                 <label for="geocoder"><h6>Last Seen Location</h6></label>
                 <div id="geocoder" class="geocoder"></div>
                 <div id='rqstmap' style='width: 100%; height: 325px;'></div>
-            </div>
-        </div>
-        <div class="form-row justify-content-center">
-            <div class="form-group col-md-10">
-                <label for="browse"><h6>Images</h6></label>
-                <input id="browse" type="file" accept=".jpg,.png,.mp4,.wav,.mov" class="form-control-file"
-                       onchange="previewFiles()"
-                       multiple>
-                <br>
-                <div id="preview"></div>
             </div>
         </div>
         <div class="form-row justify-content-center">

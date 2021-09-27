@@ -26,11 +26,12 @@ if not os.path.exists(directory):
 UPLOAD_FOLDER = 'static\\uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # admin side
 
@@ -50,7 +51,7 @@ def admin():
             session['adminName'] = account['adminName']
             msg = 'Logged in successfully !'
 
-            query = "SELECT * FROM rqstforms WHERE status ='1'"
+            query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1'"
             cursor.execute(query)
             col = cursor.fetchall()
             return render_template('adminmenu.html', msg=msg, col=col)
@@ -62,7 +63,7 @@ def admin():
 @app.route('/adminmenu', methods=['POST', 'GET'])
 def adminmenu():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='1'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("adminmenu.html", col=col)
@@ -71,7 +72,7 @@ def adminmenu():
 @app.route('/approvedlist', methods=['POST', 'GET'])
 def approvedlist():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("approvedlist.html", col=col)
@@ -94,17 +95,18 @@ def approve():
         newID = request.form['test']
         if request.form.get('approve') == 'approve':
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            query = "UPDATE rqstforms SET status = '2' WHERE id = %s"
+            query = "UPDATE rqstforms SET status = '2' WHERE rqstId = %s"
             cursor.execute(query, [newID])
             mysql.connection.commit()
 
         elif request.form.get('delete') == 'delete':
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            query = "UPDATE rqstforms SET status = '0' WHERE id = %s"
+            query = "UPDATE rqstforms SET status = '0' WHERE rqstId = %s"
             cursor.execute(query, [newID])
             mysql.connection.commit()
 
     return redirect(url_for('adminmenu'))
+
 
 # client side
 
@@ -167,7 +169,7 @@ def logout():
 @app.route('/missinglist', methods=['GET', 'POST'])
 def missinglist():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("missinglist.html", col=col)
@@ -181,7 +183,7 @@ def mainmenu():
 @app.route('/map')
 def map():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("map.html", col=col)
@@ -195,7 +197,7 @@ def rqstform():
 @app.route('/sightform')
 def sightform():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
     cursor.execute(query)
     col = cursor.fetchall()
     return render_template("sightform.html", col=col)
@@ -210,19 +212,29 @@ def upload():
         mGender = request.form['mGender']
         mLong = request.form['lat']
         mLat = request.form['long']
+        address = request.form['address']
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         now = datetime.now().date()
 
         files = request.files.getlist('files[]')
+
+        # submit into db for request
+        cursor.execute(
+            "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (mName, mDate, mAge, mGender, mLong, mLat, address, now))
+
+        # get id from rqstfrom
+        userid = cursor.lastrowid
+
         # print(files)
         for file in files:
             if file and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
                 cursor.execute(
-                    "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, mImages, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    (mName, mDate, mAge, mGender, mLong, mLat, filename, now))
+                    'INSERT INTO images (mImages, rqstId) VALUES (%s, %s)',
+                    (filename, userid))
             print(file)
         cursor.close()
         flash('File(s) successfully uploaded')
@@ -230,6 +242,47 @@ def upload():
         mysql.connection.commit()
 
     return render_template("rqstform.html")
+
+
+# @app.route('/sight', methods=['POST', 'GET'])
+# def upload():
+#     if request.method == 'POST':
+#         mName = request.form['mName']
+#         mDate = request.form['mDate']
+#         mAge = request.form['mAge']
+#         mGender = request.form['mGender']
+#         mLong = request.form['lat']
+#         mLat = request.form['long']
+#         address = request.form['address']
+#
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         now = datetime.now().date()
+#
+#         files = request.files.getlist('files[]')
+#
+#         # submit into db for request
+#         cursor.execute(
+#             "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+#             (mName, mDate, mAge, mGender, mLong, mLat, address, now))
+#
+#         # get id from rqstfrom
+#         userid = cursor.lastrowid
+#
+#         # print(files)
+#         for file in files:
+#             if file and allowed_file(file.filename):
+#                 filename = secure_filename(file.filename)
+#                 file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+#                 cursor.execute(
+#                     'INSERT INTO images (mImages, rqstId) VALUES (%s, %s)',
+#                     (filename, userid))
+#             print(file)
+#         cursor.close()
+#         flash('File(s) successfully uploaded')
+#
+#         mysql.connection.commit()
+#
+#     return render_template("rqstform.html")
 
 
 @app.route('/aboutus')

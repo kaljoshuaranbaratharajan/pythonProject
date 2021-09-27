@@ -15,10 +15,9 @@
 <main class="container text-center">
     <br>
     <h2 style="text-transform: uppercase;">Missing Person Location</h2>
-    <small id="missingLocation" class="form-text text-muted">
+    <small id="missingLocation" class="form-text text-muted" style="padding-bottom: 22px">
         Displays the location of reported missing person
     </small>
-    <br><br>
     <div id="map" style="width: 100%; height: 800px"></div>
 
     <style>
@@ -40,9 +39,6 @@
     @keyframes fadein {from {opacity: 0;} to {opacity: 1;}}
     .mapboxgl-popup {animation: fadein 0.2s;}
     .mapboxgl-popup-content {max-width: 300px; min-width: 50px; border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,0.4); min-width: 200px;}
-    .mapboxgl-popup-close-button {font-size: 16px; font-family: Tahoma, Verdana, sans-serif; color: #c3c3c3; font-weight: bold;}
-    .mapboxgl-popup-close-button:hover {color: #999; background-color: white; border-top-right-radius: 12px;}
-    body .mapboxgl-map {line-height: 1.4;}
     </style>
 
 </main>
@@ -92,9 +88,9 @@ const geojson = {
         coordinates: [{{x.mLat}}, {{x.mLong}}]
       },
       properties: {
-        title: '{{x.mName}}',
+        name: '{{x.mName}}',
         image: '{{x.mImages}}',
-        description: 'Victim went missing on {{x.mDate}}'
+        location: '{{x.location}}'
       }
     },
   {% endfor %}
@@ -111,10 +107,12 @@ for (const { geometry, properties } of geojson.features) {
     new mapboxgl.Marker(el)
         .setLngLat(geometry.coordinates)
         .setPopup(
+
 <!--            addpopup-->
-            new mapboxgl.Popup({ offset: 25 })
+            new mapboxgl.Popup({ offset: 25, closeButton: false })
                 .setHTML(
-                    `<h5>${properties.title}</h5><img src="static/uploads/${properties.image}" alt="${properties.image}" height="100"><p>${properties.description}</p>`
+                    `<h5 style="text-transform: uppercase;">${properties.name}</h5>
+                    <img src="static/uploads/${properties.image}" alt="${properties.image}" height="160" style="padding-bottom: 10px;"><p>${properties.location}</p>`
                 )
         )
         .addTo(map);

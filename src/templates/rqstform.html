@@ -20,10 +20,9 @@
 <main class="container">
     <br>
     <h2 style="text-transform: uppercase;" class="text-center">Request Form</h2>
-    <small id="missingLocation" class="form-text text-muted text-center">
+    <small id="missingLocation" class="form-text text-muted text-center" style="padding-bottom: 50px">
         Submit a request in locating missing persons
     </small>
-    <br><br>
     <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" name="rqst" id="rqst">
         <div class="form-row justify-content-center">
             <div class="form-group col-md-5">
@@ -47,7 +46,6 @@
                 <select type="text" class="custom-select mr-sm-2" name="mGender" id="mGender">
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                    <option value="Custom">Custom</option>
                 </select>
             </div>
         </div>
@@ -57,14 +55,16 @@
                 <div id="geocoder" class="geocoder"></div>
                 <input type="number" step=any id="long" name="long" hidden>
                 <input type="number" step=any id="lat" name="lat" hidden>
+                <input type="text" id="address" name="address" hidden>
+
                 <div id='rqstmap' style='width: 100%; height: 325px;'></div>
             </div>
         </div>
         <div class="form-row justify-content-center">
             <div class="form-group col-md-10">
                 <label for="fileInput"><h6>Choose Images</h6></label>
-                <input id="fileInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="files[]"
-                       onchange="previewFiles()"
+                    <input id="fileInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="files[]"
+                           onchange="previewFiles()"
                        multiple>
                 <br>
                 <div id="preview"></div>
@@ -118,7 +118,6 @@
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
 <!--    mapbox geocoder-->
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
-
 <script type="text/javascript">
 long = 100.312;
 lat = 5.425;
@@ -179,19 +178,6 @@ mapboxgl.accessToken = 'pk.eyJ1IjoibWlzc2luZ3BlcnNvbnRlc3RpbmciLCJhIjoiY2t0MnBqa
         zoom: 12
     });
 
-<!--get current location-->
-rqstmap.addControl(
-new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-<!--    When active the map will receive updates to the device's location as it changes.-->
-    trackUserLocation: true,
-<!--    Draw an arrow next to the location dot to indicate which direction the device is heading.-->
-    showUserHeading: true
-    })
-);
-
 <!--geocoder-->
 const geocoder = new MapboxGeocoder({
     accessToken: mapboxgl.accessToken,
@@ -206,6 +192,9 @@ geocoder.on('result', ({result}) => {
     document.getElementById('long').value = long
     lat = result.geometry.coordinates[1]
     document.getElementById('lat').value = lat
+
+    address = result.place_name
+    document.getElementById('address').value = address
 });
 
 <!--age select form-->

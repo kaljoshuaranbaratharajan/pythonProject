@@ -23,7 +23,7 @@
         Submit updates on potential sightings of missing persons
     </small>
     <br><br>
-    <form>
+    <form  action="{{ url_for('sight') }}" method="post" enctype="multipart/form-data" name="sight" id="sight">
         <div class="form-row justify-content-center">
             <div class="form-group col-md-6">
                 <label class="mr-sm-2" for="missingListNames"><h6>Missing Person's Name</h6></label>

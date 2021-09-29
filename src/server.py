@@ -51,10 +51,10 @@ def admin():
             session['adminName'] = account['adminName']
             msg = 'Logged in successfully !'
 
-            query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1'"
+            query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1' AND numOfImg = '0'"
             cursor.execute(query)
-            col = cursor.fetchall()
-            return render_template('adminmenu.html', msg=msg, col=col)
+            row = cursor.fetchall()
+            return render_template('adminmenu.html', msg=msg, row=row)
         else:
             msg = 'Incorrect name / password !'
     return render_template('admin.html', msg=msg)
@@ -63,19 +63,19 @@ def admin():
 @app.route('/adminmenu', methods=['POST', 'GET'])
 def adminmenu():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1' AND numOfImg = '0'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("adminmenu.html", col=col)
+    row = cursor.fetchall()
+    return render_template("adminmenu.html", row=row)
 
 
 @app.route('/approvedlist', methods=['POST', 'GET'])
 def approvedlist():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("approvedlist.html", col=col)
+    row = cursor.fetchall()
+    return render_template("approvedlist.html", row=row)
 
 
 @app.route('/adminmap')
@@ -83,8 +83,8 @@ def adminmap():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     query = "SELECT * FROM rqstforms WHERE status ='2'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("adminmap.html", col=col)
+    row = cursor.fetchall()
+    return render_template("adminmap.html", row=row)
 
 
 # status: 0 = Rejected, 1 = Pending Approval, 2 = Approved, 3 = Found, 4 = Missing
@@ -169,10 +169,16 @@ def logout():
 @app.route('/missinglist', methods=['GET', 'POST'])
 def missinglist():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
+    # query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
+    # cursor.execute(query)
+
+    query = "SELECT rqstforms.*, images.mImages, sightforms.sDate, sightforms.sAddress FROM rqstforms INNER JOIN images ON images.rqstId = rqstforms.rqstId " \
+            "LEFT JOIN sightforms ON sightforms.rqstId = rqstforms.rqstId WHERE status ='2' AND numOfImg = '0'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("missinglist.html", col=col)
+
+    row = cursor.fetchall()
+
+    return render_template("missinglist.html", row=row)
 
 
 @app.route('/mainmenu')
@@ -183,10 +189,10 @@ def mainmenu():
 @app.route('/map')
 def map():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("map.html", col=col)
+    row = cursor.fetchall()
+    return render_template("map.html", row=row)
 
 
 @app.route('/rqstform')
@@ -197,10 +203,10 @@ def rqstform():
 @app.route('/sightform')
 def sightform():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2'"
+    query = "SELECT * FROM rqstforms WHERE status ='2'"
     cursor.execute(query)
-    col = cursor.fetchall()
-    return render_template("sightform.html", col=col)
+    row = cursor.fetchall()
+    return render_template("sightform.html", row=row)
 
 
 @app.route('/upload', methods=['POST', 'GET'])
@@ -233,9 +239,9 @@ def upload():
                 filename = secure_filename(file.filename)
                 file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
                 cursor.execute(
-                    'INSERT INTO images (mImages, rqstId) VALUES (%s, %s)',
-                    (filename, userid))
-            print(file)
+                    'INSERT INTO images (mImages, rqstId, numOfImg) VALUES (%s, %s, %s)',
+                    (filename, userid, files.index(file)))
+
         cursor.close()
         flash('File(s) successfully uploaded')
 
@@ -244,45 +250,33 @@ def upload():
     return render_template("rqstform.html")
 
 
-# @app.route('/sight', methods=['POST', 'GET'])
-# def upload():
-#     if request.method == 'POST':
-#         mName = request.form['mName']
-#         mDate = request.form['mDate']
-#         mAge = request.form['mAge']
-#         mGender = request.form['mGender']
-#         mLong = request.form['lat']
-#         mLat = request.form['long']
-#         address = request.form['address']
-#
-#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#         now = datetime.now().date()
-#
-#         files = request.files.getlist('files[]')
-#
-#         # submit into db for request
-#         cursor.execute(
-#             "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-#             (mName, mDate, mAge, mGender, mLong, mLat, address, now))
-#
-#         # get id from rqstfrom
-#         userid = cursor.lastrowid
-#
-#         # print(files)
-#         for file in files:
-#             if file and allowed_file(file.filename):
-#                 filename = secure_filename(file.filename)
-#                 file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
-#                 cursor.execute(
-#                     'INSERT INTO images (mImages, rqstId) VALUES (%s, %s)',
-#                     (filename, userid))
-#             print(file)
-#         cursor.close()
-#         flash('File(s) successfully uploaded')
-#
-#         mysql.connection.commit()
-#
-#     return render_template("rqstform.html")
+@app.route('/sight', methods=['POST', 'GET'])
+def sight():
+    if request.method == 'POST':
+        rqstId = request.form['rqstId']
+        sDate = request.form['sDate']
+        sTime = request.form['sTime']
+        sAddress = request.form['sAddress']
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        # get id from rqstfrom
+        print(rqstId)
+        try:
+            query = "UPDATE sightforms SET sDate = %s, sTime = %s, sAddress = %s WHERE rqstId = %s"
+            cursor.execute(query, (sDate, sTime, sAddress, rqstId))
+            cursor.close()
+
+        except:
+            cursor.execute(
+                "INSERT INTO sightforms (sDate, sTime, sAddress, rqstId) VALUES (%s, %s, %s, %s)",
+                (sDate, sTime, sAddress, rqstId))
+            cursor.close()
+        flash('File(s) successfully uploaded')
+
+        mysql.connection.commit()
+
+    return render_template("sightform.html")
 
 
 @app.route('/aboutus')

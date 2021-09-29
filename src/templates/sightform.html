@@ -28,27 +28,33 @@
             <div class="form-group col-md-6">
                 <label class="mr-sm-2" for="missingListNames"><h6>Missing Person's Name</h6></label>
                 <select class="custom-select mr-sm-2" id="missingListNames">
-                    {% for x in col %}
-                        <option value="{{x.id}}">{{x.mName}}</option>
+                    {% for x in row %}
+                        <option value="{{x.rqstId}}">{{x.mName}}</option>
                     {% endfor %}
                 </select>
+                <input type="number" name="rqstId" id="rqstId" hidden>
             </div>
+
             <div class="form-group col-md-2">
-                <label for="sightingDate"><h6>Sighting Date</h6></label>
-                <input id="sightingDate" type="date" class="form-control" placeholder="Select date">
+                <label for="sDate"><h6>Sighting Date</h6></label>
+                <input id="sDate" name="sDate" type="date" class="form-control" placeholder="Select date">
             </div>
+
             <div class="form-group col-md-2">
-                <label for="default-picker"><h6>Time of Event</h6></label>
+                <label for="sTime"><h6>Time of Event</h6></label>
                 <div class="md-form md-outline">
-                    <input type="time" id="default-picker" class="form-control" placeholder="Select time">
+                    <input type="time" name="sTime" id="sTime" class="form-control" placeholder="Select time">
                 </div>
             </div>
+
         </div>
         <div class="form-row justify-content-center">
             <div class="form-group col-md-10">
                 <label for="geocoder"><h6>Last Seen Location</h6></label>
                 <div id="geocoder" class="geocoder"></div>
-                <div id='rqstmap' style='width: 100%; height: 325px;'></div>
+                <input type="text" id="sAddress" name="sAddress" hidden>
+
+                <div id='sightmap' style='width: 100%; height: 325px;'></div>
             </div>
         </div>
         <div class="form-row justify-content-center">
@@ -75,7 +81,7 @@
         box-shadow: none;
     }
 
-    #rqstmap {
+    #sightmap {
         margin-top: 10px;
         margin-bottom: 10px;
         border-radius: .25rem;
@@ -84,9 +90,6 @@
     #image {
         padding-right: 10px;
     }
-
-
-
 
     </style>
 
@@ -102,6 +105,9 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
 
 <script type="text/javascript">
+long = 100.312;
+lat = 5.425;
+
 <!--image attachment-->
 function previewFiles() {
 
@@ -134,23 +140,12 @@ function previewFiles() {
 
 <!--        mapbox-->
 mapboxgl.accessToken = 'pk.eyJ1IjoibWlzc2luZ3BlcnNvbnRlc3RpbmciLCJhIjoiY2t0MnBqajR5MDBiZTJxbnd3Zm91b3kwOCJ9.3fL2XKMWcaJ_-k3hE-oU7w';
-    var rqstmap = new mapboxgl.Map({
-        container: 'rqstmap',
-        style: 'mapbox://styles/mapbox/streets-v11'
+    var sightmap = new mapboxgl.Map({
+        container: 'sightmap',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [long, lat],
+        zoom: 12
     });
-
-<!--get current location-->
-rqstmap.addControl(
-new mapboxgl.GeolocateControl({
-    positionOptions: {
-        enableHighAccuracy: true
-    },
-<!--    When active the map will receive updates to the device's location as it changes.-->
-    trackUserLocation: true,
-<!--    Draw an arrow next to the location dot to indicate which direction the device is heading.-->
-    showUserHeading: true
-    })
-);
 
 <!--geocoder-->
 const geocoder = new MapboxGeocoder({
@@ -158,9 +153,18 @@ const geocoder = new MapboxGeocoder({
     mapboxgl: mapboxgl
 });
 
-document.getElementById('geocoder').appendChild(geocoder.onAdd(rqstmap));
+document.getElementById('geocoder').appendChild(geocoder.onAdd(sightmap));
 
+<!--coordinates-->
+geocoder.on('result', ({result}) => {
+    sAddress = result.place_name
+    document.getElementById('sAddress').value = sAddress
+});
 
+<!--get rqstid-->
+var e = document.getElementById("missingListNames");
+var id = e.value;
+document.getElementById("rqstId").value = id;
 
 </script>
 </body>

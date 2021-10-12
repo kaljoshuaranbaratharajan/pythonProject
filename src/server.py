@@ -288,55 +288,66 @@ def sight():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         files = request.files.getlist('sights[]')
 
-        # submit into db for request
-        cursor.execute(
-            "INSERT INTO sightforms (sDate, sTime, sAddress, rqstId, user) VALUES (%s, %s, %s, %s, %s)",
-            (sDate, sTime, sAddress, optionId, user))
+        try:
+            # submit into db for request
+            cursor.execute(
+                "INSERT INTO sightforms (sDate, sTime, sAddress, rqstId, user) VALUES (%s, %s, %s, %s, %s)",
+                (sDate, sTime, sAddress, optionId, user))
 
-        # get id from sightform
-        sightid = cursor.lastrowid
+            # get id from sightform
+            sightid = cursor.lastrowid
 
-        cursor.execute('SELECT mImages FROM images WHERE rqstId = %s', [optionId])
-        dbresult = cursor.fetchall()
+            cursor.execute('SELECT mImages FROM images WHERE rqstId = %s', [optionId])
+            dbresult = cursor.fetchall()
 
-        # keep file path but extract img name from json ** care for tuple errors
-        imgdb = face_recognition.load_image_file("static/uploads/" + dbresult[0]['mImages'])
-        imgdb = cv2.cvtColor(imgdb, cv2.COLOR_BGR2RGB)
+            # keep file path but extract img name from json ** care for tuple errors
+            imgdb = face_recognition.load_image_file("static/uploads/" + dbresult[0]['mImages'])
+            imgdb = cv2.cvtColor(imgdb, cv2.COLOR_BGR2RGB)
 
-        percentage = 0
-        # insert image into sighting image database
-        for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+            percentage = 0
+            # insert image into sighting image database
+            for file in files:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
 
-                imgsight = face_recognition.load_image_file("static/uploads/" + file.filename)
-                imgsight = cv2.cvtColor(imgsight, cv2.COLOR_BGR2RGB)
+                    imgsight = face_recognition.load_image_file("static/uploads/" + file.filename)
+                    imgsight = cv2.cvtColor(imgsight, cv2.COLOR_BGR2RGB)
 
-                encodeDB = face_recognition.face_encodings(imgdb)[0]
+                    encodeDB = face_recognition.face_encodings(imgdb)[0]
 
-                encodeSight = face_recognition.face_encodings(imgsight)[0]
+                    encodeSight = face_recognition.face_encodings(imgsight)[0]
 
-                faceDis = face_recognition.face_distance([encodeDB], encodeSight)
+                    faceDis = face_recognition.face_distance([encodeDB], encodeSight)
 
-                comparingpercentage = (1.0 - (faceDis[0]))
+                    comparingpercentage = (1.0 - (faceDis[0]))
 
-                if(comparingpercentage > percentage):
-                    percentage = comparingpercentage
+                    if(comparingpercentage > percentage):
+                        percentage = comparingpercentage
 
-                finalpercentage = round(percentage * 100, 2)
+                    finalpercentage = round(percentage * 100, 2)
 
-                print(str(finalpercentage) + " match")
+                    print(str(finalpercentage) + " match")
 
-                cursor.execute(
-                    'INSERT INTO sightimages (sImages, sightId, numOfImg, comparingpercentage) VALUES (%s, %s, %s, %s)',
-                    (filename, sightid, files.index(file), finalpercentage))
+                    cursor.execute(
+                        'INSERT INTO sightimages (sImages, sightId, numOfImg, comparingpercentage) VALUES (%s, %s, %s, %s)',
+                        (filename, sightid, files.index(file), finalpercentage))
 
-        cursor.close()
-        mysql.connection.commit()
+            cursor.close()
+            mysql.connection.commit()
+
+        except:
+            print("shit don't work")
+            return redirect(url_for('errorpage'))
 
     return render_template("completerqst.html")
 
+@app.route('/errorpage')
+def errorpage():
+    if "email" in session:
+        return render_template("errorpage.html")
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/sightings')
 def sightings():

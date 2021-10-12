@@ -1,0 +1,37 @@
+{% extends "navbar.html" %}
+{% block title %}Sightings{% endblock %}
+{% block content %}
+<main class="container">
+    <br>
+    <h2 style="text-transform: uppercase;" class="text-center">Sightings</h2>
+    <small id="missingLocation" class="form-text text-muted text-center" style="padding-bottom: 50px">
+        Possible sightings of missing people by the community
+    </small>
+    {% for x in row %}
+    <div class="row" style="padding-bottom: 10px">
+        <div class="col-lg-10 mx-auto border rounded">
+            <div class="media align-items-lg-center flex-column flex-lg-row p-3">
+                <div class="col">
+                    <h4 style="text-transform: uppercase;">
+                        {{x.mName}}</h4><br>
+                    <p><b style="text-transform: uppercase;">Possible Location:</b> {{x.sAddress}}</p>
+                    <p><b style="text-transform: uppercase;">Submitted By:</b> {{x.user}}</p>
+                    <p><b style="text-transform: uppercase;">Sighted On:</b> {{x.sDate}}</p>
+                    <p><b style="text-transform: uppercase;">Match:</b> {{x.comparingpercentage}}%</p>
+                </div>
+                <br>
+                <img src="static/uploads/{{x.sImages}}" alt="{{x.sImages}}" id="image" width="250px" height="250px"
+                     class="ml-lg-5 order-1 order-lg-2">
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <style>
+        #image {
+            border-radius: .25rem;
+        }
+
+    </style>
+</main>
+{% endblock %}

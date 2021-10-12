@@ -35,15 +35,15 @@
             <div class="form-group col-md-1">
                 <label for="mAge"><h6>Age</h6></label>
                 <input type="number" value="16" min="0" max="100" step="1" class="form-control" name="mAge" id="mAge"
-                       placeholder="Age">
+                       placeholder="Age" required>
             </div>
             <div class="form-group col-md-2">
                 <label for="mDate"><h6>Missing Date</h6></label>
-                <input id="mDate" name="mDate" type="date" class="form-control" placeholder="Select date">
+                <input id="mDate" name="mDate" type="date" class="form-control" placeholder="Select date" required>
             </div>
             <div class="form-group col-md-2">
                 <label class="mr-sm-2" for="mGender"><h6>Gender</h6></label>
-                <select type="text" class="custom-select mr-sm-2" name="mGender" id="mGender">
+                <select type="text" class="custom-select mr-sm-2" name="mGender" id="mGender" required>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                 </select>
@@ -65,7 +65,7 @@
                 <label for="fileInput"><h6>Choose Images</h6></label>
                     <input id="fileInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="files[]"
                            onchange="previewFiles()"
-                       multiple>
+                       multiple required>
                 <br>
                 <div id="preview"></div>
             </div>
@@ -151,23 +151,6 @@ function previewFiles() {
   }
 }
 
-$(document).ready(function(){
- // File type validation
-    $("#fileInput").change(function(){
-        var fileLength = this.files.length;
-        var match= ["image/jpeg","image/png","image/jpg"];
-        var i;
-        for(i = 0; i < fileLength; i++){
-            var file = this.files[i];
-            var imagefile = file.type;
-            if(!((imagefile==match[0]) || (imagefile==match[1]) || (imagefile==match[2]))){
-                alert('Please select a valid image file (JPEG/JPG/PNG).');
-                $("#fileInput").val('');
-                return false;
-            }
-        }
-    });
-});
 
 <!--        mapbox-->
 mapboxgl.accessToken = 'pk.eyJ1IjoibWlzc2luZ3BlcnNvbnRlc3RpbmciLCJhIjoiY2t0MnBqajR5MDBiZTJxbnd3Zm91b3kwOCJ9.3fL2XKMWcaJ_-k3hE-oU7w';

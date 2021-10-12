@@ -9,17 +9,19 @@
     </small>
     {% for x in row %}
     <div class="row" style="padding-bottom: 10px">
-        <div class="col-lg-8 mx-auto border rounded">
+        <div class="col-lg-10 mx-auto border rounded">
             <div class="media align-items-lg-center flex-column flex-lg-row p-3">
-                <div>
+                <div class="col">
                     <h4 style="text-transform: uppercase;">
                         {{x.mName}}</h4><br>
                     <p><b style="text-transform: uppercase;">Age:</b> {{x.mAge}}</p>
                     <p><b style="text-transform: uppercase;">Missing Date:</b> {{x.mDate}}</p>
                     <p><b style="text-transform: uppercase;">Last Seen Location:</b> {{x.location}}</p>
-                    <small style="font-style: italic;">*The victim was last seen at {{x.sAddress}} on {{x.sDate}}.</small>
-                </div>
-                <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" id="image" width="200px" height="200px"
+                    <p><b style="text-transform: uppercase;">Uploaded Date:</b> {{x.uploadedDate}}</p>
+                    <p><b style="text-transform: uppercase;">Uploaded By:</b> {{x.user}}</p>
+                    <p><b style="text-transform: uppercase;">Contact Info:</b> {{x.phone}}</p>
+                </div><br>
+                <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" id="image" width="300px" height="300px"
                      class="ml-lg-5 order-1 order-lg-2">
             </div>
         </div>

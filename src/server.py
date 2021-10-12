@@ -5,6 +5,9 @@ import MySQLdb.cursors
 import re
 import os
 from datetime import datetime
+import cv2
+import numpy as np
+import face_recognition
 
 app = Flask(__name__)
 
@@ -124,6 +127,7 @@ def login():
             session['id'] = account['id']
             session['name'] = account['name']
             session['email'] = account['email']
+            session['phone'] = account['phone']
             msg = 'Logged in successfully !'
             return render_template('mainmenu.html', msg=msg)
         else:
@@ -134,12 +138,13 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     msg = ''
-    if request.method == 'POST' and 'name' in request.form and 'password' in request.form and 'email' in request.form:
+    if request.method == 'POST' and 'name' in request.form and 'password' in request.form and 'email' in request.form and 'phone' in request.form:
         name = request.form['name']
         password = request.form['password']
         email = request.form['email']
+        phone = request.form['phone']
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM users WHERE name = % s', [name])
+        cursor.execute('SELECT * FROM users WHERE email = % s', [email])
         account = cursor.fetchone()
         if account:
             msg = 'Account already exists !'
@@ -147,10 +152,12 @@ def register():
             msg = 'Invalid email address !'
         elif not re.match(r'[A-Za-z]+', name):
             msg = 'Name must contain only characters!'
-        elif not name or not password or not email:
+        elif not re.match(r'[0-9]+', phone):
+            msg = 'Please enter a valid phone number!'
+        elif not name or not password or not email or not phone:
             msg = 'Please fill out the form !'
         else:
-            cursor.execute('INSERT INTO users (name, email, password) VALUES (% s, % s, % s)', (name, email, password))
+            cursor.execute('INSERT INTO users (name, email, password, phone) VALUES (%s, %s, %s, %s)', (name, email, password, phone))
             mysql.connection.commit()
             msg = 'You have successfully registered !'
     elif request.method == 'POST':
@@ -163,50 +170,61 @@ def logout():
     session.pop('loggedin', None)
     session.pop('id', None)
     session.pop('name', None)
+    session.pop('email', None)
     return redirect(url_for('login'))
 
 
 @app.route('/missinglist', methods=['GET', 'POST'])
 def missinglist():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    # query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
-    # cursor.execute(query)
+    if "email" in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = "SELECT rqstforms.*, images.mImages FROM rqstforms INNER JOIN images ON images.rqstId = rqstforms.rqstId WHERE status ='2' AND numOfImg = '0'"
+        cursor.execute(query)
+        row = cursor.fetchall()
 
-    query = "SELECT rqstforms.*, images.mImages, sightforms.sDate, sightforms.sAddress FROM rqstforms INNER JOIN images ON images.rqstId = rqstforms.rqstId " \
-            "LEFT JOIN sightforms ON sightforms.rqstId = rqstforms.rqstId WHERE status ='2' AND numOfImg = '0'"
-    cursor.execute(query)
-
-    row = cursor.fetchall()
-
-    return render_template("missinglist.html", row=row)
+        return render_template("missinglist.html", row=row)
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/mainmenu')
 def mainmenu():
-    return render_template("mainmenu.html")
+    if "email" in session:
+        return render_template("mainmenu.html")
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/map')
 def map():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
-    cursor.execute(query)
-    row = cursor.fetchall()
-    return render_template("map.html", row=row)
+    if "email" in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
+        cursor.execute(query)
+        row = cursor.fetchall()
+        return render_template("map.html", row=row)
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/rqstform')
 def rqstform():
-    return render_template("rqstform.html")
+    if "email" in session:
+        return render_template("rqstform.html")
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/sightform')
 def sightform():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
-    cursor.execute(query)
-    row = cursor.fetchall()
-    return render_template("sightform.html", row=row)
+    if "email" in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        query = "SELECT * FROM rqstforms WHERE status ='2'"
+        cursor.execute(query)
+        row = cursor.fetchall()
+        return render_template("sightform.html", row=row)
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/upload', methods=['POST', 'GET'])
@@ -219,6 +237,8 @@ def upload():
         mLong = request.form['lat']
         mLat = request.form['long']
         address = request.form['address']
+        user = session["name"]
+        phone = session["phone"]
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         now = datetime.now().date()
@@ -227,8 +247,8 @@ def upload():
 
         # submit into db for request
         cursor.execute(
-            "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-            (mName, mDate, mAge, mGender, mLong, mLat, address, now))
+            "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate, user, phone) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (mName, mDate, mAge, mGender, mLong, mLat, address, now, user, phone))
 
         # get id from rqstfrom
         userid = cursor.lastrowid
@@ -247,47 +267,92 @@ def upload():
 
         mysql.connection.commit()
 
-    return render_template("rqstform.html")
+    return render_template("completerqst.html")
 
+@app.route('/completerqst')
+def completerqst():
+    if "email" in session:
+        return render_template("completerqst.html")
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/sight', methods=['POST', 'GET'])
 def sight():
     if request.method == 'POST':
-        rqstId = request.form['rqstId']
+        optionId = request.form['optionId']
         sDate = request.form['sDate']
         sTime = request.form['sTime']
         sAddress = request.form['sAddress']
+        user = session["name"]
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        files = request.files.getlist('sights[]')
 
-        # get id from rqstfrom
-        print(rqstId)
-        try:
-            query = "UPDATE sightforms SET sDate = %s, sTime = %s, sAddress = %s WHERE rqstId = %s"
-            cursor.execute(query, (sDate, sTime, sAddress, rqstId))
-            cursor.close()
+        # submit into db for request
+        cursor.execute(
+            "INSERT INTO sightforms (sDate, sTime, sAddress, rqstId, user) VALUES (%s, %s, %s, %s, %s)",
+            (sDate, sTime, sAddress, optionId, user))
 
-        except:
-            cursor.execute(
-                "INSERT INTO sightforms (sDate, sTime, sAddress, rqstId) VALUES (%s, %s, %s, %s)",
-                (sDate, sTime, sAddress, rqstId))
-            cursor.close()
-        flash('File(s) successfully uploaded')
+        # get id from sightform
+        sightid = cursor.lastrowid
 
+        cursor.execute('SELECT mImages FROM images WHERE rqstId = %s', [optionId])
+        dbresult = cursor.fetchall()
+
+        # keep file path but extract img name from json ** care for tuple errors
+        imgdb = face_recognition.load_image_file("static/uploads/" + dbresult[0]['mImages'])
+        imgdb = cv2.cvtColor(imgdb, cv2.COLOR_BGR2RGB)
+
+        percentage = 0
+        # insert image into sighting image database
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+
+                imgsight = face_recognition.load_image_file("static/uploads/" + file.filename)
+                imgsight = cv2.cvtColor(imgsight, cv2.COLOR_BGR2RGB)
+
+                encodeDB = face_recognition.face_encodings(imgdb)[0]
+
+                encodeSight = face_recognition.face_encodings(imgsight)[0]
+
+                faceDis = face_recognition.face_distance([encodeDB], encodeSight)
+
+                comparingpercentage = (1.0 - (faceDis[0]))
+
+                if(comparingpercentage > percentage):
+                    percentage = comparingpercentage
+
+                finalpercentage = round(percentage * 100, 2)
+
+                print(str(finalpercentage) + " match")
+
+                cursor.execute(
+                    'INSERT INTO sightimages (sImages, sightId, numOfImg, comparingpercentage) VALUES (%s, %s, %s, %s)',
+                    (filename, sightid, files.index(file), finalpercentage))
+
+        cursor.close()
         mysql.connection.commit()
 
-    return render_template("sightform.html")
+    return render_template("completerqst.html")
 
 
-@app.route('/aboutus')
-def aboutus():
-    return render_template("aboutus.html")
+@app.route('/sightings')
+def sightings():
+    if "email" in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
+        # display all sightings
+        query = "SELECT rqstforms.mName, sightimages.sImages, sightimages.comparingpercentage, sightforms.sDate, sightforms.user, sightforms.sAddress FROM sightforms INNER JOIN rqstforms ON sightforms.rqstId = rqstforms.rqstId " \
+                "LEFT JOIN sightimages ON sightforms.sightId = sightimages.sightId WHERE status ='2' AND numOfImg = '0'"
+        cursor.execute(query)
+        row = cursor.fetchall()
+        cursor.close()
 
-@app.route('/profile')
-def profile():
-    return render_template("profile.html")
-
+        return render_template("sightings.html", row=row)
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True)

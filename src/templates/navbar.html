@@ -24,25 +24,18 @@
                 <a class="nav-link" href="{{ url_for('missinglist') }}" style="text-transform: uppercase;">Missing List</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('map') }}" style="text-transform: uppercase;">Map</a>
+                <a class="nav-link" href="{{ url_for('sightings') }}" style="text-transform: uppercase;">Sightings</a>
             </li>
             <li class="nav-item">
                 <a href="#myModal" data-toggle="modal" data-target="#navModal" class="nav-link" style="text-transform: uppercase;">Form</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('aboutus') }}" style="text-transform: uppercase;">About Us</a>
+                <a class="nav-link" href="{{ url_for('map') }}" style="text-transform: uppercase;">Map</a>
             </li>
         </ul>
     </div>
-    <div class="btn-group">
-        <button type="button" class="btn btn-default data-toggle" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">
-            <h2><i class="fas fa-user-alt"></i></h2>
-        </button>
-        <div class="dropdown-menu dropdown-menu-right text-center">
-            <a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a>
-            <a class="dropdown-item" href="{{ url_for('logout') }}" >Logout</a>
-        </div>
+    <div>
+        <a class="btn btn-dark" href="{{ url_for('logout') }}" role="button">Logout</a>
     </div>
 </nav>
 

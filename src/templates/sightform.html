@@ -27,12 +27,13 @@
         <div class="form-row justify-content-center">
             <div class="form-group col-md-6">
                 <label class="mr-sm-2" for="missingListNames"><h6>Missing Person's Name</h6></label>
-                <select class="custom-select mr-sm-2" id="missingListNames">
+<!--                fix first select no id issue-->
+                <select class="custom-select mr-sm-2" id="missingListNames" onchange="optionvalue()">
                     {% for x in row %}
                         <option value="{{x.rqstId}}">{{x.mName}}</option>
                     {% endfor %}
                 </select>
-                <input type="number" name="rqstId" id="rqstId" hidden>
+                <input type="text" name="optionId" id="optionId" hidden>
             </div>
 
             <div class="form-group col-md-2">
@@ -55,6 +56,16 @@
                 <input type="text" id="sAddress" name="sAddress" hidden>
 
                 <div id='sightmap' style='width: 100%; height: 325px;'></div>
+            </div>
+        </div>
+        <div class="form-row justify-content-center">
+            <div class="form-group col-md-10">
+                <label for="sightInput"><h6>Choose Images</h6></label>
+                    <input id="sightInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="sights[]"
+                           onchange="previewFiles()"
+                       multiple>
+                <br>
+                <div id="preview"></div>
             </div>
         </div>
         <div class="form-row justify-content-center">
@@ -116,7 +127,7 @@ function previewFiles() {
 
   function readAndPreview(file) {
 
-    if ( /\.(jpe?g|png|mp4|wav|mov)$/i.test(file.name) ) {
+    if ( /\.(jpe?g|png)$/i.test(file.name) ) {
       var reader = new FileReader();
 
       reader.addEventListener("load", function () {
@@ -162,9 +173,13 @@ geocoder.on('result', ({result}) => {
 });
 
 <!--get rqstid-->
-var e = document.getElementById("missingListNames");
-var id = e.value;
-document.getElementById("rqstId").value = id;
+function optionvalue(){
+    var select = document.getElementById("missingListNames");
+    var id = select.options[select.selectedIndex].value;
+    console.log(id);
+    document.getElementById("optionId").value = id;
+}
+
 
 </script>
 </body>

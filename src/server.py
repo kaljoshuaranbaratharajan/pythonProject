@@ -1,4 +1,5 @@
-from flask import Flask, redirect, url_for, render_template, request, session, flash
+from flask import Flask, redirect, url_for, render_template, request, session, flash, Response
+import test
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 import MySQLdb.cursors
@@ -6,7 +7,6 @@ import re
 import os
 from datetime import datetime
 import cv2
-import numpy as np
 import face_recognition
 
 app = Flask(__name__)
@@ -28,6 +28,14 @@ if not os.path.exists(directory):
 
 UPLOAD_FOLDER = 'static\\uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+secdir = os.path.abspath(os.path.dirname(__file__))
+directory = os.path.join(secdir, 'static\\sightimg')
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
+SIGHT_FOLDER = 'static\\sightimg'
+app.config['SIGHT_FOLDER'] = SIGHT_FOLDER
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -66,7 +74,8 @@ def admin():
 @app.route('/adminmenu', methods=['POST', 'GET'])
 def adminmenu():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1' AND numOfImg = '0'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId " \
+            "WHERE status ='1' AND numOfImg = '0' "
     cursor.execute(query)
     row = cursor.fetchall()
     return render_template("adminmenu.html", row=row)
@@ -75,7 +84,8 @@ def adminmenu():
 @app.route('/approvedlist', methods=['POST', 'GET'])
 def approvedlist():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId " \
+            "WHERE status ='2' AND numOfImg = '0' "
     cursor.execute(query)
     row = cursor.fetchall()
     return render_template("approvedlist.html", row=row)
@@ -84,7 +94,7 @@ def approvedlist():
 @app.route('/adminmap')
 def adminmap():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT * FROM rqstforms WHERE status ='2'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
     cursor.execute(query)
     row = cursor.fetchall()
     return render_template("adminmap.html", row=row)
@@ -109,6 +119,11 @@ def approve():
             mysql.connection.commit()
 
     return redirect(url_for('adminmenu'))
+
+
+@app.route('/admincamera', methods=['POST', 'GET'])
+def admincamera():
+    return test.webcamtesting()
 
 
 # client side
@@ -157,7 +172,8 @@ def register():
         elif not name or not password or not email or not phone:
             msg = 'Please fill out the form !'
         else:
-            cursor.execute('INSERT INTO users (name, email, password, phone) VALUES (%s, %s, %s, %s)', (name, email, password, phone))
+            cursor.execute('INSERT INTO users (name, email, password, phone) VALUES (%s, %s, %s, %s)',
+                           (name, email, password, phone))
             mysql.connection.commit()
             msg = 'You have successfully registered !'
     elif request.method == 'POST':
@@ -269,12 +285,14 @@ def upload():
 
     return render_template("completerqst.html")
 
+
 @app.route('/completerqst')
 def completerqst():
     if "email" in session:
         return render_template("completerqst.html")
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/sight', methods=['POST', 'GET'])
 def sight():
@@ -309,7 +327,7 @@ def sight():
             for file in files:
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
-                    file.save(os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename))
+                    file.save(os.path.join(secdir, app.config['SIGHT_FOLDER'], filename))
 
                     imgsight = face_recognition.load_image_file("static/uploads/" + file.filename)
                     imgsight = cv2.cvtColor(imgsight, cv2.COLOR_BGR2RGB)
@@ -322,7 +340,7 @@ def sight():
 
                     comparingpercentage = (1.0 - (faceDis[0]))
 
-                    if(comparingpercentage > percentage):
+                    if (comparingpercentage > percentage):
                         percentage = comparingpercentage
 
                     finalpercentage = round(percentage * 100, 2)
@@ -342,12 +360,14 @@ def sight():
 
     return render_template("completerqst.html")
 
+
 @app.route('/errorpage')
 def errorpage():
     if "email" in session:
         return render_template("errorpage.html")
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/sightings')
 def sightings():
@@ -364,6 +384,7 @@ def sightings():
         return render_template("sightings.html", row=row)
     else:
         return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

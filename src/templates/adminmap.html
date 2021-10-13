@@ -86,9 +86,9 @@ const geojson = {
         coordinates: [{{x.mLat}}, {{x.mLong}}]
       },
       properties: {
-        title: '{{x.mName}}',
+        name: '{{x.mName}}',
         image: '{{x.mImages}}',
-        description: 'Victim went missing on {{x.mDate}}'
+        location: '{{x.location}}'
       }
     },
   {% endfor %}
@@ -105,10 +105,12 @@ for (const { geometry, properties } of geojson.features) {
     new mapboxgl.Marker(el)
         .setLngLat(geometry.coordinates)
         .setPopup(
+
 <!--            addpopup-->
-            new mapboxgl.Popup({ offset: 25 })
+            new mapboxgl.Popup({ offset: 25, closeButton: false })
                 .setHTML(
-                    `<h5>${properties.title}</h5><img src="static/uploads/${properties.image}" alt="${properties.image}" height="100"><p>${properties.description}</p>`
+                    `<h5 style="text-transform: uppercase;">${properties.name}</h5>
+                    <img src="static/uploads/${properties.image}" alt="${properties.image}" height="160" style="padding-bottom: 10px;"><p>${properties.location}</p>`
                 )
         )
         .addTo(map);

@@ -63,9 +63,12 @@
         <div class="form-row justify-content-center">
             <div class="form-group col-md-10">
                 <label for="fileInput"><h6>Choose Images</h6></label>
-                    <input id="fileInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="files[]"
-                           onchange="previewFiles()"
+                <input id="fileInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="files[]"
+                       onchange="previewFiles()"
                        multiple required>
+                <small id="imageSmall" class="form-text text-muted">
+                    Please rename the image to the name of the victim.
+                </small>
                 <br>
                 <div id="preview"></div>
             </div>
@@ -103,8 +106,6 @@
     #image {
         padding-right: 10px;
     }
-
-
 
     </style>
 

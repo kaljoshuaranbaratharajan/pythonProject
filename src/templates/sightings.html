@@ -20,7 +20,7 @@
                     <p><b style="text-transform: uppercase;">Match:</b> {{x.comparingpercentage}}%</p>
                 </div>
                 <br>
-                <img src="static/uploads/{{x.sImages}}" alt="{{x.sImages}}" id="image" width="250px" height="250px"
+                <img src="static/sightimg/{{x.sImages}}" alt="{{x.sImages}}" id="image"
                      class="ml-lg-5 order-1 order-lg-2">
             </div>
         </div>
@@ -29,7 +29,10 @@
 
     <style>
         #image {
+            width: 250px;
+            height: 250px;
             border-radius: .25rem;
+            object-fit: cover;
         }
 
     </style>

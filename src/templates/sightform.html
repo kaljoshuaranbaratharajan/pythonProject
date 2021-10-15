@@ -29,6 +29,7 @@
                 <label class="mr-sm-2" for="missingListNames"><h6>Missing Person's Name</h6></label>
 <!--                fix first select no id issue-->
                 <select class="custom-select mr-sm-2" id="missingListNames" onchange="optionvalue()">
+                    <option disabled selected value> -- select a person -- </option>
                     {% for x in row %}
                         <option value="{{x.rqstId}}">{{x.mName}}</option>
                     {% endfor %}
@@ -64,6 +65,9 @@
                     <input id="sightInput" type="file" accept=".jpg,.png,.jpeg" class="form-control-file" name="sights[]"
                            onchange="previewFiles()"
                        multiple>
+                    <small id="imageSmall" class="form-text text-muted">
+                        Please upload the images of the victim.
+                    </small>
                 <br>
                 <div id="preview"></div>
             </div>
@@ -179,7 +183,6 @@ function optionvalue(){
     console.log(id);
     document.getElementById("optionId").value = id;
 }
-
 
 </script>
 </body>

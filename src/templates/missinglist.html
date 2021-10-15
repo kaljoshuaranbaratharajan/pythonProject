@@ -19,9 +19,9 @@
                     <p><b style="text-transform: uppercase;">Last Seen Location:</b> {{x.location}}</p>
                     <p><b style="text-transform: uppercase;">Uploaded Date:</b> {{x.uploadedDate}}</p>
                     <p><b style="text-transform: uppercase;">Uploaded By:</b> {{x.user}}</p>
-                    <p><b style="text-transform: uppercase;">Contact Info:</b> {{x.phone}}</p>
+                    <p><b style="text-transform: uppercase;">Contact Info:</b> {{x.email}}</p>
                 </div><br>
-                <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" id="image" width="300px" height="300px"
+                <img src="static/uploads/{{x.mImages}}" alt="{{x.mImages}}" id="image"
                      class="ml-lg-5 order-1 order-lg-2">
             </div>
         </div>
@@ -30,7 +30,11 @@
 
     <style>
         #image {
+            width: 300px;
+            height: 300px;
             border-radius: .25rem;
+            object-fit: cover;
+            object-position: 100% 0;
         }
     </style>
 </main>

@@ -1,10 +1,12 @@
-from flask import Flask, redirect, url_for, render_template, request, session, flash, Response
-import test
+from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
+import camera
 import MySQLdb.cursors
 import re
 import os
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime
 import cv2
 import face_recognition
@@ -62,13 +64,19 @@ def admin():
             session['adminName'] = account['adminName']
             msg = 'Logged in successfully !'
 
-            query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='1' AND numOfImg = '0'"
+            query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = " \
+                    "images.rqstId WHERE status ='1' AND numOfImg = '0' "
             cursor.execute(query)
             row = cursor.fetchall()
             return render_template('adminmenu.html', msg=msg, row=row)
         else:
             msg = 'Incorrect name / password !'
     return render_template('admin.html', msg=msg)
+
+
+@app.route('/admincamera', methods=['POST', 'GET'])
+def admincamera():
+    return camera.webcamtesting()
 
 
 @app.route('/adminmenu', methods=['POST', 'GET'])
@@ -94,7 +102,8 @@ def approvedlist():
 @app.route('/adminmap')
 def adminmap():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
+    query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId " \
+            "WHERE status ='2' AND numOfImg = '0' "
     cursor.execute(query)
     row = cursor.fetchall()
     return render_template("adminmap.html", row=row)
@@ -102,28 +111,53 @@ def adminmap():
 
 # status: 0 = Rejected, 1 = Pending Approval, 2 = Approved, 3 = Found, 4 = Missing
 
+
+EMAIL_ADDRESS = os.environ.get('EMAIL_USER')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASS')
+
+
 @app.route('/approve', methods=['POST', 'GET'])
 def approve():
     if request.method == 'POST':
-        newID = request.form['test']
+        newID = request.form['newID']
+        useremail = request.form['useremail']
         if request.form.get('approve') == 'approve':
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             query = "UPDATE rqstforms SET status = '2' WHERE rqstId = %s"
             cursor.execute(query, [newID])
+
+            # send approve email
+            msg = EmailMessage()
+            msg['Subject'] = 'Request Submission'
+            msg['From'] = EMAIL_ADDRESS
+            msg['To'] = useremail
+            msg.set_content('Your submission has been approved!')
+
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+                smtp.send_message(msg)
+
             mysql.connection.commit()
 
-        elif request.form.get('delete') == 'delete':
+        elif request.form.get('reject') == 'reject':
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
             query = "UPDATE rqstforms SET status = '0' WHERE rqstId = %s"
             cursor.execute(query, [newID])
+
+            # send approve email
+            msg = EmailMessage()
+            msg['Subject'] = 'Request Submission'
+            msg['From'] = EMAIL_ADDRESS
+            msg['To'] = useremail
+            msg.set_content('Your submission has been rejected!')
+
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+                smtp.send_message(msg)
+
             mysql.connection.commit()
 
     return redirect(url_for('adminmenu'))
-
-
-@app.route('/admincamera', methods=['POST', 'GET'])
-def admincamera():
-    return test.webcamtesting()
 
 
 # client side
@@ -194,7 +228,8 @@ def logout():
 def missinglist():
     if "email" in session:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        query = "SELECT rqstforms.*, images.mImages FROM rqstforms INNER JOIN images ON images.rqstId = rqstforms.rqstId WHERE status ='2' AND numOfImg = '0'"
+        query = "SELECT rqstforms.*, images.mImages FROM rqstforms INNER JOIN images ON images.rqstId = " \
+                "rqstforms.rqstId WHERE status ='2' AND numOfImg = '0' "
         cursor.execute(query)
         row = cursor.fetchall()
 
@@ -215,7 +250,8 @@ def mainmenu():
 def map():
     if "email" in session:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = images.rqstId WHERE status ='2' AND numOfImg = '0'"
+        query = "SELECT rqstforms.*, images.mImages FROM rqstforms LEFT JOIN images ON rqstforms.rqstId = " \
+                "images.rqstId WHERE status ='2' AND numOfImg = '0' "
         cursor.execute(query)
         row = cursor.fetchall()
         return render_template("map.html", row=row)
@@ -254,7 +290,7 @@ def upload():
         mLat = request.form['long']
         address = request.form['address']
         user = session["name"]
-        phone = session["phone"]
+        email = session["email"]
 
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         now = datetime.now().date()
@@ -263,8 +299,9 @@ def upload():
 
         # submit into db for request
         cursor.execute(
-            "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate, user, phone) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (mName, mDate, mAge, mGender, mLong, mLat, address, now, user, phone))
+            "INSERT INTO rqstforms (mName, mDate, mAge, mGender, mLong, mLat, location, uploadedDate, user, "
+            "email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (mName, mDate, mAge, mGender, mLong, mLat, address, now, user, email))
 
         # get id from rqstfrom
         userid = cursor.lastrowid
@@ -329,7 +366,7 @@ def sight():
                     filename = secure_filename(file.filename)
                     file.save(os.path.join(secdir, app.config['SIGHT_FOLDER'], filename))
 
-                    imgsight = face_recognition.load_image_file("static/uploads/" + file.filename)
+                    imgsight = face_recognition.load_image_file("static/sightimg/" + file.filename)
                     imgsight = cv2.cvtColor(imgsight, cv2.COLOR_BGR2RGB)
 
                     encodeDB = face_recognition.face_encodings(imgdb)[0]
@@ -348,7 +385,8 @@ def sight():
                     print(str(finalpercentage) + " match")
 
                     cursor.execute(
-                        'INSERT INTO sightimages (sImages, sightId, numOfImg, comparingpercentage) VALUES (%s, %s, %s, %s)',
+                        'INSERT INTO sightimages (sImages, sightId, numOfImg, comparingpercentage) VALUES (%s, %s, '
+                        '%s, %s)',
                         (filename, sightid, files.index(file), finalpercentage))
 
             cursor.close()
@@ -375,7 +413,9 @@ def sightings():
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
         # display all sightings
-        query = "SELECT rqstforms.mName, sightimages.sImages, sightimages.comparingpercentage, sightforms.sDate, sightforms.user, sightforms.sAddress FROM sightforms INNER JOIN rqstforms ON sightforms.rqstId = rqstforms.rqstId " \
+        query = "SELECT rqstforms.mName, sightimages.sImages, sightimages.comparingpercentage, sightforms.sDate, " \
+                "sightforms.user, sightforms.sAddress FROM sightforms INNER JOIN rqstforms ON sightforms.rqstId = " \
+                "rqstforms.rqstId " \
                 "LEFT JOIN sightimages ON sightforms.sightId = sightimages.sightId WHERE status ='2' AND numOfImg = '0'"
         cursor.execute(query)
         row = cursor.fetchall()

@@ -35,7 +35,6 @@
         cursor: pointer;
     }
 
-    /* Popups (adjustments to emulate Leaflet.js) */
     @keyframes fadein {from {opacity: 0;} to {opacity: 1;}}
     .mapboxgl-popup {animation: fadein 0.2s;}
     .mapboxgl-popup-content {max-width: 300px; min-width: 50px; border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,0.4); min-width: 200px;}
@@ -112,7 +111,7 @@ for (const { geometry, properties } of geojson.features) {
             new mapboxgl.Popup({ offset: 25, closeButton: false })
                 .setHTML(
                     `<h5 style="text-transform: uppercase;">${properties.name}</h5>
-                    <img src="static/uploads/${properties.image}" alt="${properties.image}" height="160" style="padding-bottom: 10px;"><p>${properties.location}</p>`
+                    <img src="static/uploads/${properties.image}" alt="${properties.image}" style="width: 160px; height: 160px; padding-bottom: 10px; object-fit: cover; object-position: 100% 0;"><p>${properties.location}</p>`
                 )
         )
         .addTo(map);

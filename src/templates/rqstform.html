@@ -102,11 +102,6 @@
         margin-bottom: 10px;
         border-radius: .25rem;
     }
-
-    #image {
-        padding-right: 10px;
-    }
-
     </style>
 
 </main>
@@ -137,6 +132,7 @@ function previewFiles() {
       reader.addEventListener("load", function () {
         var image = new Image();
         image.height = 250;
+        image.width = 250;
         image.title = file.name;
         image.src = this.result;
         preview.appendChild( image );

@@ -15,10 +15,11 @@
                         <h6 class="font-weight-bold my-2">UPLOAD DATE: {{x.uploadedDate}}</h6>
                         <div class="btn-group" role="group" aria-label="Basic example">
                             <form method="post" action="/approve">
-                                <input type="hidden" name="test" value={{x.rqstId}}>
+                                <input type="hidden" name="newID" value={{x.rqstId}}>
+                                <input type="hidden" name="useremail" value={{x.email}}>
                                 <button type="submit" value="approve" name="approve" class="btn btn-success">Approve
                                 </button>
-                                <button type="submit" value="delete" name="delete" class="btn btn-danger">Delete
+                                <button type="submit" value="reject" name="reject" class="btn btn-danger">Reject
                                 </button>
                             </form>
                         </div>

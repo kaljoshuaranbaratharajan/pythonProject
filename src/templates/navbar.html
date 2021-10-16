@@ -21,16 +21,21 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('missinglist') }}" style="text-transform: uppercase;">Missing List</a>
+                <a class="nav-link" href="{{ url_for('missinglist') }}" style="text-transform: uppercase;">Missing
+                    List</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('sightings') }}" style="text-transform: uppercase;">Sightings</a>
             </li>
             <li class="nav-item">
-                <a href="#myModal" data-toggle="modal" data-target="#navModal" class="nav-link" style="text-transform: uppercase;">Form</a>
+                <a href="#myModal" data-toggle="modal" data-target="#navModal" class="nav-link"
+                   style="text-transform: uppercase;">Form</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('map') }}" style="text-transform: uppercase;">Map</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('userwebcamhistory') }}" style="text-transform: uppercase;">Webcam History</a>
             </li>
         </ul>
     </div>
@@ -57,14 +62,16 @@
                                 <img src="https://image.flaticon.com/icons/png/512/1486/1486433.png"
                                      class="rounded img-fluid" height="200" width="200" alt="Request Form">
                             </a>
-                            <br><p style="text-transform: uppercase;">Request Form</p>
+                            <br>
+                            <p style="text-transform: uppercase;">Request Form</p>
                         </div>
                         <div class="col-md-6 text-center">
                             <a href="{{ url_for('sightform') }}">
                                 <img src="https://image.flaticon.com/icons/png/512/1486/1486433.png"
                                      class="rounded img-fluid" height="200" width="200" alt="Sighting Form">
                             </a>
-                            <br><p style="text-transform: uppercase;">Sighting Form</p>
+                            <br>
+                            <p style="text-transform: uppercase;">Sighting Form</p>
                         </div>
                     </div>
                 </div>

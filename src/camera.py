@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
-import os
 from datetime import datetime
 import cv2
 import numpy as np
@@ -20,15 +19,29 @@ mysql = MySQL(app)
 
 
 def webcamtesting():
-    imgpath = "static/uploads/"
-    images = []
+    imagespth = []
     clsnames = []
-    imglist = os.listdir(imgpath)
+    encodeimg = []
 
-    for cls in imglist:
-        currentimg = cv2.imread(f'{imgpath}/{cls}')
-        images.append(currentimg)
-        clsnames.append(os.path.splitext(cls)[0])
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT mName FROM rqstforms')
+    imgname = cursor.fetchall()
+
+    # append name from sql to list
+    for x in range(len(imgname)):
+        clsnames.append(imgname[x]['mName'])
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT mImages FROM images WHERE numOfImg = '0'")
+    actualimg = cursor.fetchall()
+
+    # append image name from sql to list
+    for x in range(len(actualimg)):
+        imagespth.append("static/uploads/" + str(actualimg[x]['mImages']))
+
+    for y in range(len(imagespth)):
+        currentimage = cv2.imread(f'{(imagespth[y])}')
+        encodeimg.append(currentimage)
 
     def encodings(images):
         encodeList = []
@@ -41,20 +54,20 @@ def webcamtesting():
     def recordwebcam(name):
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         now = datetime.now().date()
-        cursor.execute('SELECT * FROM webcamresults WHERE foundName = %s AND encounterDatetime = %s',
+        cursor.execute('SELECT * FROM webcamresults WHERE foundName = %s AND encounterDate = %s',
                        (name, now))
         results = cursor.fetchall()
         if len(results) <= 0:
-            sql = "INSERT INTO webcamresults (foundName, encounterDatetime, encounterLocation) VALUES (%s, %s, %s)"
+            sql = "INSERT INTO webcamresults (foundName, encounterDate, encounterLocation) VALUES (%s, %s, %s)"
             val = (name, now, "George Town, Penang, Malaysia")
             cursor.execute(sql, val)
         else:
-            sql = "UPDATE webcamresults SET encounterDatetime = %s, encounterLocation = %s WHERE foundName = %s"
+            sql = "UPDATE webcamresults SET encounterDate = %s, encounterLocation = %s WHERE foundName = %s"
             val = (now, "George Town, Penang, Malaysia", name)
             cursor.execute(sql, val)
         mysql.connection.commit()
 
-    encodeListKnown = encodings(images)
+    encodeListKnown = encodings(encodeimg)
 
     capture = cv2.VideoCapture(0)
     process_this_frame = True
@@ -79,7 +92,7 @@ def webcamtesting():
                 face_distances = face_recognition.face_distance(encodeListKnown, face_encoding)
                 matchindex = np.argmin(face_distances)
                 if matches[matchindex]:
-                    name = clsnames[matchindex].upper()
+                    name = clsnames[matchindex]
 
                 face_names.append(name)
 
@@ -97,7 +110,7 @@ def webcamtesting():
             # Draw a label with a name below the face
             cv2.rectangle(img, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
             font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(img, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+            cv2.putText(img, name, (left + 6, bottom - 6), font, 0.75, (255, 255, 255), 1)
             recordwebcam(name)
 
         cv2.imshow("Webcam", img)

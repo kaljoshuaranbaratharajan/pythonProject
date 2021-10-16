@@ -74,6 +74,15 @@ def admin():
     return render_template('admin.html', msg=msg)
 
 
+@app.route('/webcamhistory')
+def webcamhistory():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM webcamresults"
+    cursor.execute(query)
+    row = cursor.fetchall()
+    return render_template("webcamhistory.html", row=row)
+
+
 @app.route('/admincamera', methods=['POST', 'GET'])
 def admincamera():
     return camera.webcamtesting()
@@ -257,6 +266,15 @@ def map():
         return render_template("map.html", row=row)
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/userwebcamhistory')
+def userwebcamhistory():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    query = "SELECT * FROM webcamresults"
+    cursor.execute(query)
+    row = cursor.fetchall()
+    return render_template("userwebcamhistory.html", row=row)
 
 
 @app.route('/rqstform')

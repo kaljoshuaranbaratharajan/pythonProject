@@ -1,0 +1,24 @@
+{% extends "navbar.html" %}
+{% block title %}Webcam History{% endblock %}
+{% block content %}
+<main class="container">
+    <br>
+    <h2 style="text-transform: uppercase;" class="text-center">Webcam History</h2>
+    <small id="missingLocation" class="form-text text-muted text-center" style="padding-bottom: 50px">
+        Logs the results from the webcam feed
+    </small>
+    <div class="container py-5">
+        {% for x in row %}
+        <div class="row">
+            <div class="col-lg-8 mx-auto border rounded">
+                <div class="media align-items-lg-center flex-column p-3">
+                    <p class="font-italic text-muted mb-0 small">Webcam recorded <b>{{x.foundName}}</b> found at
+                        {{x.encounterLocation}} on {{x.encounterDate}}.</p>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

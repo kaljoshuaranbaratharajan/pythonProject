@@ -1,0 +1,16 @@
+{% extends "adminnavbar.html" %}
+{% block title %}Webcam History{% endblock %}
+{% block content %}
+<div class="container py-5">
+    {% for x in row %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto border rounded">
+            <div class="media align-items-lg-center flex-column p-3">
+                    <p class="font-italic text-muted mb-0 small">Webcam recorded {{x.foundName}} found at {{x.encounterLocation}} on {{x.encounterDate}}.</p>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

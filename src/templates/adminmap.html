@@ -21,6 +21,7 @@
         margin-bottom: 10px;
         border-radius: .25rem;
     }
+
     .marker {
         background-image: url('https://cdn-icons-png.flaticon.com/512/684/684908.png');
         background-size: cover;
@@ -30,7 +31,6 @@
         cursor: pointer;
     }
 
-    /* Popups (adjustments to emulate Leaflet.js) */
     @keyframes fadein {from {opacity: 0;} to {opacity: 1;}}
     .mapboxgl-popup {animation: fadein 0.2s;}
     .mapboxgl-popup-content {max-width: 300px; min-width: 50px; border-radius: 12px; box-shadow: 0 3px 14px rgba(0,0,0,0.4); min-width: 200px;}
@@ -97,7 +97,7 @@ const geojson = {
 
 <!--add markers to map-->
 for (const { geometry, properties } of geojson.features) {
-    <!--  create a HTML element for each feature-->
+    <!--  create an HTML element for each feature-->
     const el = document.createElement('div');
     el.className = 'marker';
 
@@ -115,6 +115,12 @@ for (const { geometry, properties } of geojson.features) {
         )
         .addTo(map);
 }
+
+
+<!--testing camera marker-->
+const cameramarker = new mapboxgl.Marker({ color: 'black' })
+.setLngLat([100.3327, 5.4164])
+.addTo(map);
 
 </script>
 </body>
